@@ -3,6 +3,7 @@ import random
 import socket
 import time
 from args_parser import get_args
+from my_socket import MySocket
 
 
 args = get_args()
@@ -41,20 +42,8 @@ user_agents = [
 ]
 
 
-class _(socket.socket):
-    def send_line(self, line):
-        line = f"{line}\r\n"
-        self.send(line.encode("utf-8"))
-
-    def send_header(self, name, value):
-        self.send_line(f"{name}: {value}")
-
-
-socket.socket = _
-
-
 def init_socket(ip):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = MySocket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(4)
 
     if args.https:
