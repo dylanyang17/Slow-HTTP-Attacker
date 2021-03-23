@@ -10,7 +10,7 @@ def get_args():
     )
     parser.add_argument("host", nargs="?", help="Host to perform stress test on")
     parser.add_argument(
-        "-m", "--mode", default='header', help='Mode of attack. The supported options are "header", "post" and "read"',
+        "-m", "--mode", default='header', help='Mode of attack. The supported options are "header", "post" and "read". Use "header" by default',
         type=str
     )
     parser.add_argument(
@@ -61,7 +61,7 @@ def get_args():
         dest="sleeptime",
         default=15,
         type=int,
-        help="Time to sleep after sending a beat",
+        help="Time to sleep between beats",
     )
     parser.set_defaults(verbose=False)
     parser.set_defaults(randuseragent=False)
