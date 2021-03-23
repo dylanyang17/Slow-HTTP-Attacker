@@ -37,19 +37,19 @@ def get_args():
         action="store_true",
         help="Randomizes user-agents with each request",
     )
-    parser.add_argument(
-        "-x",
-        "--useproxy",
-        dest="useproxy",
-        action="store_true",
-        help="Use a SOCKS5 proxy for connecting",
-    )
-    parser.add_argument(
-        "--proxy-host", default="127.0.0.1", help="SOCKS5 proxy host"
-    )
-    parser.add_argument(
-        "--proxy-port", default="8080", help="SOCKS5 proxy port", type=int
-    )
+    # parser.add_argument(
+    #     "-x",
+    #     "--useproxy",
+    #     dest="useproxy",
+    #     action="store_true",
+    #     help="Use a SOCKS5 proxy for connecting",
+    # )
+    # parser.add_argument(
+    #     "--proxy-host", default="127.0.0.1", help="SOCKS5 proxy host"
+    # )
+    # parser.add_argument(
+    #     "--proxy-port", default="8080", help="SOCKS5 proxy port", type=int
+    # )
     parser.add_argument(
         "--https",
         dest="https",
@@ -61,11 +61,11 @@ def get_args():
         dest="sleeptime",
         default=15,
         type=int,
-        help="Time to sleep between each header sent.",
+        help="Time to sleep after sending a beat",
     )
     parser.set_defaults(verbose=False)
     parser.set_defaults(randuseragent=False)
-    parser.set_defaults(useproxy=False)
+    # parser.set_defaults(useproxy=False)
     parser.set_defaults(https=False)
 
     args = parser.parse_args()
@@ -85,20 +85,20 @@ def get_args():
         parser.print_help()
         sys.exit(1)
 
-    if args.useproxy:
-        # Tries to import to external "socks" library
-        # and monkey patches socket.socket to connect over
-        # the proxy by default
-        try:
-            import socks
-
-            socks.setdefaultproxy(
-                socks.PROXY_TYPE_SOCKS5, args.proxy_host, args.proxy_port
-            )
-            socket.socket = socks.socksocket
-            logging.info("Using SOCKS5 proxy for connecting...")
-        except ImportError:
-            logging.error("Socks Proxy Library Not Available!")
+    # if args.useproxy:
+    #     # Tries to import to external "socks" library
+    #     # and monkey patches socket.socket to connect over
+    #     # the proxy by default
+    #     try:
+    #         import socks
+    #
+    #         socks.setdefaultproxy(
+    #             socks.PROXY_TYPE_SOCKS5, args.proxy_host, args.proxy_port
+    #         )
+    #         socket.socket = socks.socksocket
+    #         logging.info("Using SOCKS5 proxy for connecting...")
+    #     except ImportError:
+    #         logging.error("Socks Proxy Library Not Available!")
 
     if args.verbose:
         logging.basicConfig(
