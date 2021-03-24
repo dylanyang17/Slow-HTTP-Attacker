@@ -1,6 +1,7 @@
 import argparse
 import logging
 import socket
+import re
 import sys
 
 
@@ -8,14 +9,15 @@ def get_args():
     parser = argparse.ArgumentParser(
         description="Slow HTTP Attacker, a tool providing three types of slow HTTP attack."
     )
-    parser.add_argument("host", nargs="?", help="Host to perform stress test on")
+    parser.add_argument("url", nargs="?", help='URL to perform stress test on. ("http[s]://<host>[:port][/path]")')
     parser.add_argument(
-        "-m", "--mode", default='header', help='Mode of attack. The supported options are "header", "post" and "read". Use "header" by default',
+        "-m", "--mode", default='header',
+        help='Mode of attack. The supported options are "header", "post" and "read". ("header" by default)',
         type=str
     )
-    parser.add_argument(
-        "-p", "--port", default=80, help="Port of webserver, usually 80", type=int
-    )
+    # parser.add_argument(
+    #     "-p", "--port", default=80, help="Port of webserver, usually 80", type=int
+    # )
     parser.add_argument(
         "-s",
         "--sockets",
@@ -50,12 +52,12 @@ def get_args():
     # parser.add_argument(
     #     "--proxy-port", default="8080", help="SOCKS5 proxy port", type=int
     # )
-    parser.add_argument(
-        "--https",
-        dest="https",
-        action="store_true",
-        help="Use HTTPS for the requests",
-    )
+    # parser.add_argument(
+    #     "--https",
+    #     dest="https",
+    #     action="store_true",
+    #     help="Use HTTPS for the requests",
+    # )
     parser.add_argument(
         "--sleeptime",
         dest="sleeptime",
@@ -66,7 +68,7 @@ def get_args():
     parser.set_defaults(verbose=False)
     parser.set_defaults(randuseragent=False)
     # parser.set_defaults(useproxy=False)
-    parser.set_defaults(https=False)
+    # parser.set_defaults(https=False)
 
     args = parser.parse_args()
 
@@ -78,11 +80,6 @@ def get_args():
 
     if args.mode not in ['header', 'post', 'read']:
         print('Unsupported mode. The supported modes are "header", "post" and "read".')
-        sys.exit(1)
-
-    if not args.host:
-        print("Host required!")
-        parser.print_help()
         sys.exit(1)
 
     # if args.useproxy:
@@ -113,4 +110,12 @@ def get_args():
             level=logging.INFO,
         )
 
-    return args
+    m = re.fullmatch(r'(?P<protocol>https?)://(?P<host>[^:/]*)(:(?P<port>\d*))?(?P<path>/.*)?', args.url)
+    if m is None:
+        print('URL needs to be like "http[s]://<host>[:port][/path]"')
+        sys.exit(1)
+    https = True if m.group('protocol') == 'https' else False
+    host = m.group('host')
+    port = int(m.group('port')) if m.group('port') is not None else 80
+    path = m.group('path') if m.group('path') is not None else '/'
+    return args, https, host, port, path
