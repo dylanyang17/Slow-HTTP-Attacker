@@ -14,26 +14,24 @@
 详细使用说明如下：
 
 ```
-usage: main.py [-h] [-m MODE] [-p PORT] [-s SOCKETS] [-v] [-ua] [--https]
-               [--sleeptime SLEEPTIME]
-               [host]
+usage: main.py [-h] [-m MODE] [-s SOCKETS] [-v] [-ua] [--sleeptime SLEEPTIME]
+               [url]
 
 Slow HTTP Attacker, a tool providing three types of slow HTTP attack.
 
 positional arguments:
-  host                  Host to perform stress test on
+  url                   URL to perform stress test on.
+                        ("http[s]://<host>[:port][/path]")
 
 optional arguments:
   -h, --help            show this help message and exit
   -m MODE, --mode MODE  Mode of attack. The supported options are "header",
-                        "post" and "read". Use "header" by default
-  -p PORT, --port PORT  Port of webserver, usually 80
+                        "post" and "read". ("header" by default)
   -s SOCKETS, --sockets SOCKETS
                         Number of sockets to use in the test
   -v, --verbose         Increases logging
   -ua, --randuseragents
                         Randomizes user-agents with each request
-  --https               Use HTTPS for the requests
   --sleeptime SLEEPTIME
                         Time to sleep between beats
 ```
