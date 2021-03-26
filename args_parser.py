@@ -83,6 +83,6 @@ def get_args():
         sys.exit(1)
     https = True if m.group('protocol') == 'https' else False
     host = m.group('host')
-    port = int(m.group('port')) if m.group('port') is not None else 80
+    port = int(m.group('port')) if m.group('port') is not None else (443 if https else 80)
     path = m.group('path') if m.group('path') is not None else '/'
     return args, https, host, port, path
