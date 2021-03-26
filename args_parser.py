@@ -10,15 +10,15 @@ def get_args():
     )
     parser.add_argument("url", nargs="?", help='URL to perform stress test on. ("http[s]://<host>[:port][/path]")')
     parser.add_argument(
-        "-m", "--mode", default='header',
-        help='Mode of attack. The supported options are "header", "post" and "read". ("header" by default)',
+        "-m", "--mode", default='HEADER',
+        help='Mode of attack. The supported options are "HEADER", "POST" and "READ". ("header" by default)',
         type=str
     )
     parser.add_argument(
         "-s",
         "--sockets",
         default=150,
-        help="Number of sockets to use in the test",
+        help="Number of sockets to use in the test (150 by default)",
         type=int,
     )
     parser.add_argument(
@@ -26,28 +26,28 @@ def get_args():
         "--verbose",
         dest="verbose",
         action="store_true",
-        help="Increases logging",
+        help="Increases logging (False by default)",
     )
     parser.add_argument(
         "-ua",
         "--randuseragents",
         dest="randuseragent",
         action="store_true",
-        help="Randomizes user-agents with each request",
+        help="Randomizes user-agents with each request (False by default)",
     )
     parser.add_argument(
         "--sleeptime",
         dest="sleeptime",
         default=15,
         type=int,
-        help="Time to sleep between beats",
+        help="Time to sleep between beats used in HEADER and POST mode (15 by default)",
     )
     parser.add_argument(
         "-w", "--window",
         dest="window",
         default=1,
         type=int,
-        help="The window size used in Read mode (1 by default)",
+        help="The window size used in READ mode (1 by default)",
     )
     parser.set_defaults(verbose=False)
     parser.set_defaults(randuseragent=False)
@@ -58,10 +58,10 @@ def get_args():
         parser.print_help()
         sys.exit(1)
 
-    args.mode = args.mode.lower()
+    args.mode = args.mode.upper()
 
-    if args.mode not in ['header', 'post', 'read']:
-        print('Unsupported mode. The supported modes are "header", "post" and "read".')
+    if args.mode not in ['HEADER', 'POST', 'READ']:
+        print('Unsupported mode. The supported modes are "HEADER", "POST" and "READ".')
         sys.exit(1)
 
     if args.verbose:
