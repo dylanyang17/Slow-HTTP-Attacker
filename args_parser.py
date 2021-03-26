@@ -1,6 +1,5 @@
 import argparse
 import logging
-import socket
 import re
 import sys
 
@@ -15,9 +14,6 @@ def get_args():
         help='Mode of attack. The supported options are "header", "post" and "read". ("header" by default)',
         type=str
     )
-    # parser.add_argument(
-    #     "-p", "--port", default=80, help="Port of webserver, usually 80", type=int
-    # )
     parser.add_argument(
         "-s",
         "--sockets",
@@ -39,25 +35,6 @@ def get_args():
         action="store_true",
         help="Randomizes user-agents with each request",
     )
-    # parser.add_argument(
-    #     "-x",
-    #     "--useproxy",
-    #     dest="useproxy",
-    #     action="store_true",
-    #     help="Use a SOCKS5 proxy for connecting",
-    # )
-    # parser.add_argument(
-    #     "--proxy-host", default="127.0.0.1", help="SOCKS5 proxy host"
-    # )
-    # parser.add_argument(
-    #     "--proxy-port", default="8080", help="SOCKS5 proxy port", type=int
-    # )
-    # parser.add_argument(
-    #     "--https",
-    #     dest="https",
-    #     action="store_true",
-    #     help="Use HTTPS for the requests",
-    # )
     parser.add_argument(
         "--sleeptime",
         dest="sleeptime",
@@ -65,10 +42,15 @@ def get_args():
         type=int,
         help="Time to sleep between beats",
     )
+    parser.add_argument(
+        "-w", "--window",
+        dest="window",
+        default=1,
+        type=int,
+        help="The window size used in Read mode (1 by default)",
+    )
     parser.set_defaults(verbose=False)
     parser.set_defaults(randuseragent=False)
-    # parser.set_defaults(useproxy=False)
-    # parser.set_defaults(https=False)
 
     args = parser.parse_args()
 
@@ -81,21 +63,6 @@ def get_args():
     if args.mode not in ['header', 'post', 'read']:
         print('Unsupported mode. The supported modes are "header", "post" and "read".')
         sys.exit(1)
-
-    # if args.useproxy:
-    #     # Tries to import to external "socks" library
-    #     # and monkey patches socket.socket to connect over
-    #     # the proxy by default
-    #     try:
-    #         import socks
-    #
-    #         socks.setdefaultproxy(
-    #             socks.PROXY_TYPE_SOCKS5, args.proxy_host, args.proxy_port
-    #         )
-    #         socket.socket = socks.socksocket
-    #         logging.info("Using SOCKS5 proxy for connecting...")
-    #     except ImportError:
-    #         logging.error("Socks Proxy Library Not Available!")
 
     if args.verbose:
         logging.basicConfig(
