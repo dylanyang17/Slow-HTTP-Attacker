@@ -1,3 +1,5 @@
+# test.py 仅作为手动测试使用，与代码功能无关，开发完成后应删去
+
 import socket
 import random
 import ssl
