@@ -19,6 +19,17 @@ class Mode(Enum):
 
 class Attacker:
     def __init__(self, sockets, mode, host, port, path, sleeptime, https, randuseragent, window):
+        """
+        :param sockets: int，使用的套接字数目，也即线程数
+        :param mode: Mode，攻击模式
+        :param host: str，主机名
+        :param port: int，端口号
+        :param path: str，攻击路径
+        :param sleeptime: int，两次 beats 之间的间隔时间，仅 HEADER 和 POST 模式有效
+        :param https: boolean，是否使用 HTTPS
+        :param randuseragent: boolean，是否使用随机的 User-Agent
+        :param window: int，TCP 窗口大小，仅 READ 模式有效
+        """
         self.lock = threading.Lock()
         self.is_stopped = False
         self.thread_cnt = 0
