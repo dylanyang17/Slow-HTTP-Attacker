@@ -147,6 +147,7 @@ class Attacker:
             logging.info('host: %s' % self.host)
             logging.info('port: %d' % self.port)
             logging.info('path: %s' % self.path)
+            logging.info('duration: %d' % self.duration)
             logging.info('HTTPS: %s' % self.https.__str__())
             if self.mode == Mode.POST or self.mode == Mode.HEADER:
                 logging.info('sleeptime: %d' % self.sleeptime)
