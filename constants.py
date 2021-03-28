@@ -2,9 +2,10 @@ default_args = {
     'mode': 'HEADER',
     'sockets': 150,
     'verbose': False,
+    'duration': 30,
     'randuseragent': False,
     'sleeptime': 15,
-    'window': 1
+    'window': 1,
 }
 
 user_agents = [

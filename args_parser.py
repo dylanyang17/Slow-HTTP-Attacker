@@ -3,9 +3,10 @@ import logging
 import re
 import sys
 from constants import default_args
+from attacker import Mode
 
 
-def get_args_dict():
+def get_parser():
     parser = argparse.ArgumentParser(
         description="Slow HTTP Attacker, a tool providing three types of slow HTTP attack."
     )
@@ -20,6 +21,13 @@ def get_args_dict():
         "--sockets",
         default=default_args['sockets'],
         help="Number of sockets to use in the test (150 by default)",
+        type=int,
+    )
+    parser.add_argument(
+        "-d",
+        "--duration",
+        default=default_args['duration'],
+        help="The duration of the attack (30 by default, and -1 means sustained attack)",
         type=int,
     )
     parser.add_argument(
@@ -52,11 +60,18 @@ def get_args_dict():
     )
     parser.set_defaults(verbose=default_args['verbose'])
     parser.set_defaults(randuseragent=default_args['randuseragent'])
+    return parser
 
+
+def console_get_args_dict():
+    """
+    以控制台的方式运行，返回获取到的参数字典
+    :return:
+    """
+    parser = get_parser()
     if len(sys.argv) <= 1:
         parser.print_help()
         sys.exit(1)
-
     return vars(parser.parse_args())
 
 
@@ -67,7 +82,8 @@ def process_args_dict(d):
     :return: 返回可以直接传入 Attacker __init__ 函数的参数
     """
     if d.get('url') is None:
-        print('url is needed.')
+        parser = get_parser()
+        parser.print_help()
         sys.exit(1)
 
     for k, v in default_args.items():
@@ -99,4 +115,4 @@ def process_args_dict(d):
     host = m.group('host')
     port = int(m.group('port')) if m.group('port') is not None else (443 if https else 80)
     path = m.group('path') if m.group('path') is not None else '/'
-    return d['sockets'], d['mode'], host, port, path, d['sleeptime'], https, d['randuseragent'], d['window']
+    return d['sockets'], Mode[d['mode']], host, port, path, d['duration'], d['sleeptime'], https, d['randuseragent'], d['window']

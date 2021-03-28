@@ -18,13 +18,14 @@ class Mode(Enum):
 
 
 class Attacker:
-    def __init__(self, sockets, mode, host, port, path, sleeptime, https, randuseragent, window):
+    def __init__(self, sockets, mode, host, port, path, duration, sleeptime, https, randuseragent, window):
         """
         :param sockets: int，使用的套接字数目，也即线程数
         :param mode: Mode，攻击模式
         :param host: str，主机名
         :param port: int，端口号
         :param path: str，攻击路径
+        :param duration: int，攻击持续时间（秒），-1 表示不会自动停止
         :param sleeptime: int，两次 beats 之间的间隔时间，仅 HEADER 和 POST 模式有效
         :param https: boolean，是否使用 HTTPS
         :param randuseragent: boolean，是否使用随机的 User-Agent
@@ -39,6 +40,7 @@ class Attacker:
         self.host = host
         self.port = port
         self.path = path
+        self.duration = duration
         self.sleeptime = sleeptime
         self.https = https
         self.randuseragent = randuseragent
@@ -157,9 +159,12 @@ class Attacker:
             for i in range(0, self.sockets):
                 thread_pool.append(threading.Thread(target=self._single_attack, args=()))
                 thread_pool[i].start()
+            start_time = time.time()
             while True:
                 print('\rRemaining threads: %d' % thread_cnt, end='')
-                time.sleep(5)
+                time.sleep(0.5)
+                if self.duration != -1 and time.time() - start_time > self.duration:
+                    raise KeyboardInterrupt
                 with self.lock:
                     thread_cnt = self.thread_cnt
         except (KeyboardInterrupt, SystemExit):
