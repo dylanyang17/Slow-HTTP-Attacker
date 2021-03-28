@@ -1,3 +1,12 @@
+default_args = {
+    'mode': 'HEADER',
+    'sockets': 150,
+    'verbose': False,
+    'randuseragent': False,
+    'sleeptime': 15,
+    'window': 1
+}
+
 user_agents = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36",
