@@ -1,6 +1,7 @@
+import logging
+import json
 from attacker import Attacker
 from args_parser import process_args_dict
-import logging
 
 
 def tencent_run(event, context):
@@ -14,6 +15,6 @@ def tencent_run(event, context):
 def aliyun_run(event, context):
     logging.info('Aliyun Serverless.')
     logging.info(context)
-    args = process_args_dict(event)
+    args = process_args_dict(json.loads(event))
     attacker = Attacker(*args)
     attacker.attack()
