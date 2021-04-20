@@ -19,8 +19,8 @@
 详细使用说明如下：
 
 ```
-usage: main.py [-h] [-m MODE] [-s SOCKETS] [-v] [-ua] [--sleeptime SLEEPTIME]
-               [-w WINDOW]
+usage: main.py [-h] [-m MODE] [-s SOCKETS] [-d DURATION] [-v] [-ua]
+               [--sleeptime SLEEPTIME] [-w WINDOW]
                [url]
 
 Slow HTTP Attacker, a tool providing three types of slow HTTP attack.
@@ -35,9 +35,11 @@ optional arguments:
                         "POST" and "READ". ("header" by default)
   -s SOCKETS, --sockets SOCKETS
                         Number of sockets to use in the test (150 by default)
-  -v, --verbose         Increases logging
-  -ua, --randuseragents
-                        Randomizes user-agents with each request (False by
+  -d DURATION, --duration DURATION
+                        The duration of the attack (30 by default, and -1
+                        means sustained attack)
+  -v, --verbose         Increases logging (False by default)
+  -ua, --randuseragent  Randomizes user-agents with each request (False by
                         default)
   --sleeptime SLEEPTIME
                         Time to sleep between beats used in HEADER and POST

@@ -89,6 +89,11 @@ def process_args_dict(d):
     for k, v in default_args.items():
         d.setdefault(k, v)
     d['mode'] = d['mode'].upper()
+    # 在 API 调用时可能传入表示数字的字符串类型，例如字符串 "1024"
+    d['sockets'] = int(d['sockets'])
+    d['sleeptime'] = int(d['sleeptime'])
+    d['duration'] = int(d['duration'])
+    d['window'] = int(d['window'])
 
     if d['mode'] not in ['HEADER', 'POST', 'READ']:
         print('Unsupported mode. The supported modes are "HEADER", "POST" and "READ".')

@@ -103,9 +103,12 @@ class Attacker:
                 s = self.init_socket()
             except socket.error as e:
                 logging.error(e)
-                with self.lock:
-                    self.thread_cnt -= 1
-                break
+                time.sleep(2)
+                # 这里不再退出
+                continue
+                # with self.lock:
+                #     self.thread_cnt -= 1
+                # break
 
             try:
                 if self.mode == Mode.HEADER or self.mode == Mode.POST:
